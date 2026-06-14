@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>樹木台帳</title>
+<style>
+:root {
+  --forest:#1e3d1a; --canopy:#2d5c26; --leaf:#4e8c3f; --sprout:#82c06a;
+  --moss:#c8e6b8; --bark:#7a5230; --bark-lt:#b08860;
+  --soil:#f5f0e8; --paper:#fff; --ink:#1a1a1a; --ink-sub:#666; --rule:#ddd;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Hiragino Sans','Noto Sans JP',sans-serif;background:var(--soil);color:var(--ink)}
+
+/* ── ヘッダー ── */
+#hdr{
+  background:var(--forest);color:white;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 12px;height:48px;flex-shrink:0;gap:8px;
+  position:sticky;top:0;z-index:100;
+}
+#hdr h1{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.htabs{display:flex;gap:3px;flex-shrink:0}
+.htab{padding:5px 10px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;color:rgba(255,255,255,.55);white-space:nowrap}
+.htab.on{background:var(--leaf);color:white}
+.pill{background:rgba(255,255,255,.15);color:white;padding:3px 10px;border-radius:16px;font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0}
+
+/* ── ページ ── */
+.pg{display:none;flex-direction:column}
+.pg.on{display:flex}
+#pg-in{padding:10px 12px;gap:10px}
+
+/* ── カード ── */
+.card{background:var(--paper);border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.09);padding:12px 14px}
+.ctit{font-size:10px;font-weight:700;color:var(--leaf);letter-spacing:.10em;text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;border-bottom:1.5px solid var(--moss)}
+
+/* ── 番号ブロック ── */
+.num-row{display:flex;align-items:center;gap:10px}
+.num-val{font-size:34px;font-weight:800;color:var(--forest);font-variant-numeric:tabular-nums;line-height:1;min-width:110px}
+.num-edit{flex:1;display:flex;flex-direction:column;gap:6px}
+#num-inp{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;padding:8px 10px;border:1.5px solid var(--rule);border-radius:7px;background:var(--soil);font-family:inherit;color:var(--ink);-webkit-appearance:none;width:100%}
+#num-inp:focus{outline:none;border-color:var(--leaf);background:white}
+.num-hint{font-size:11px;color:var(--ink-sub)}
+.num-btns{display:flex;gap:6px}
+.nb2{padding:6px 12px;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;background:var(--moss);color:var(--forest)}
+.nb2.act{background:var(--leaf);color:white}
+
+/* ── 樹種 ── */
+.spw{position:relative}
+input[type=text],input[type=number],textarea{
+  width:100%;padding:10px 12px;border:1.5px solid var(--rule);border-radius:8px;
+  font-size:17px;font-family:inherit;background:var(--soil);
+  -webkit-appearance:none;color:var(--ink);transition:border-color .2s;
+}
+input:focus,textarea:focus{outline:none;border-color:var(--leaf);background:white}
+input[type=number]{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.sgbox{
+  position:absolute;top:100%;left:0;right:0;background:white;
+  border:1.5px solid var(--leaf);border-top:none;border-radius:0 0 8px 8px;
+  z-index:200;max-height:160px;overflow-y:auto;display:none;
+  box-shadow:0 4px 14px rgba(0,0,0,.12);
+}
+.si{padding:11px 13px;font-size:15px;cursor:pointer;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:8px}
+.si:last-child{border-bottom:none}
+.si:active{background:var(--moss)}
+.trow{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;min-height:28px}
+.spt{background:var(--moss);color:var(--forest);border:1px solid var(--sprout);padding:4px 11px;border-radius:16px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.spt.sel,.spt:active{background:var(--leaf);color:white;border-color:var(--leaf)}
+
+/* ── 計測値 ── */
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mi label{display:block;font-size:11px;font-weight:700;color:var(--ink-sub);margin-bottom:4px;letter-spacing:.05em}
+.mu{font-size:11px;color:var(--ink-sub);margin-top:3px;text-align:right}
+
+/* ── 樹勢ランク ── */
+.rg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.rb{
+  border:2px solid var(--rule);border-radius:9px;padding:10px 4px;
+  cursor:pointer;text-align:center;background:var(--soil);
+  -webkit-tap-highlight-color:transparent;transition:all .12s;
+}
+.rb .rl{font-size:26px;font-weight:900;display:block;line-height:1}
+.rb .rd{font-size:9px;color:var(--ink-sub);margin-top:3px;line-height:1.3}
+.rb[data-r=A] .rl{color:#2e7d32}.rb[data-r=B] .rl{color:#e65100}
+.rb[data-r=C] .rl{color:#bf360c}.rb[data-r=D] .rl{color:#7f0000}
+.rb[data-r=A].sel{background:#e8f5e9;border-color:#2e7d32}
+.rb[data-r=B].sel{background:#fff3e0;border-color:#e65100}
+.rb[data-r=C].sel{background:#fbe9e7;border-color:#bf360c}
+.rb[data-r=D].sel{background:#ffebee;border-color:#7f0000}
+
+/* ── C/D理由 ── */
+#rw{display:none;margin-top:8px}
+#rw.show{display:block}
+.rban{background:#fff3e0;border-left:4px solid #ff7043;padding:7px 11px;font-size:11px;color:#bf360c;font-weight:700;margin-bottom:6px;border-radius:0 5px 5px 0}
+
+/* ── 保存ボタン ── */
+.bsave{
+  width:100%;padding:15px;background:var(--forest);color:white;
+  border:none;border-radius:10px;font-size:17px;font-weight:800;
+  letter-spacing:.04em;cursor:pointer;
+  box-shadow:0 3px 14px rgba(30,61,26,.35);
+  -webkit-tap-highlight-color:transparent;transition:all .12s;
+}
+.bsave:active{transform:scale(.97)}
+.bsave.em{background:var(--bark)}
+.bcancel{width:100%;padding:10px;background:var(--soil);color:var(--ink-sub);border:1.5px solid var(--rule);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px}
+
+/* ── 一覧ページ ── */
+#pg-ls{height:calc(100vh - 48px)}
+.ltb{
+  background:white;border-bottom:1px solid var(--rule);
+  padding:8px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;
+}
+.ltb input[type=text]{font-size:13px;padding:6px 10px;flex:1;min-width:120px}
+.bsm{padding:6px 12px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.bex{background:var(--bark);color:white}
+.bim{background:var(--soil);color:var(--bark);border:1.5px solid var(--bark-lt)}
+.bcl{background:#ffebee;color:#b71c1c}
+#rscrl{flex:1;overflow-y:auto;padding:10px 12px}
+.rt{width:100%;border-collapse:collapse;background:white;border-radius:9px;overflow:hidden;box-shadow:0 1px 5px rgba(0,0,0,.09)}
+.rt th{background:var(--forest);color:rgba(255,255,255,.85);font-size:10px;font-weight:700;letter-spacing:.08em;padding:9px 10px;text-align:left}
+.rt td{padding:9px 10px;font-size:13px;border-bottom:1px solid var(--rule);vertical-align:middle}
+.rt tr:last-child td{border-bottom:none}
+.rt tr:hover td{background:var(--soil)}
+.tno{font-weight:800;color:var(--forest);font-variant-numeric:tabular-nums;white-space:nowrap}
+.trk{font-weight:900;font-size:17px;text-align:center}
+.rA{color:#2e7d32}.rB{color:#e65100}.rC{color:#bf360c}.rD{color:#7f0000}
+.bed{background:var(--moss);color:var(--forest);padding:4px 9px;border-radius:5px;border:none;font-size:11px;font-weight:700;cursor:pointer;margin-right:3px}
+.bdl{background:#ffebee;color:#b71c1c;padding:4px 9px;border-radius:5px;border:none;font-size:11px;font-weight:700;cursor:pointer}
+.emp{text-align:center;padding:50px 16px;color:var(--ink-sub);font-size:14px}
+.ei{font-size:44px;margin-bottom:10px}
+
+/* ── トースト ── */
+.toast{
+  position:fixed;bottom:20px;left:50%;
+  transform:translateX(-50%) translateY(8px);
+  background:var(--forest);color:white;padding:11px 20px;
+  border-radius:22px;font-size:13px;font-weight:700;
+  opacity:0;transition:all .22s;z-index:9999;
+  pointer-events:none;white-space:nowrap;box-shadow:0 3px 16px rgba(0,0,0,.3);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+input[type=file]{display:none}
+
+/* ── 写真ヒント ── */
+.photo-hint{background:#f0f7ee;border:1px solid var(--moss);border-radius:9px;padding:11px 13px}
+.photo-hint p{font-size:12px;color:var(--ink-sub);line-height:1.75}
+
+/* ── AutoCAD併用ヒント ── */
+.autocad-tip{
+  background:linear-gradient(135deg,#1e3d1a 0%,#2d5c26 100%);
+  color:white;border-radius:9px;padding:11px 13px;
+  font-size:12px;line-height:1.7;
+}
+.autocad-tip strong{color:var(--sprout)}
+</style>
+</head>
+<body>
+
+<div id="hdr">
+  <h1>🌳 樹木台帳</h1>
+  <div class="htabs">
+    <div class="htab on" onclick="sw('in')">入力</div>
+    <div class="htab" onclick="sw('ls')">一覧/書出</div>
+  </div>
+  <span class="pill" id="pill">0本</span>
+</div>
+
+<!-- ===== 入力ページ ===== -->
+<div class="pg on" id="pg-in">
+
+  <!-- 整理番号 -->
+  <div class="card">
+    <div class="ctit">整理番号</div>
+    <div class="num-row">
+      <div class="num-val" id="ndsp">A00001</div>
+      <div class="num-edit">
+        <input type="text" id="num-inp" placeholder="手動入力 例: A00005"
+          autocomplete="off" autocorrect="off" spellcheck="false"
+          oninput="onNumInp()" onblur="onNumBlur()" maxlength="10">
+        <div class="num-hint">AutoCADの番号を見て手動で上書きできます</div>
+        <div class="num-btns">
+          <button class="nb2" onclick="useAuto()">自動採番に戻す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 樹種 -->
+  <div class="card">
+    <div class="ctit">樹種</div>
+    <div class="spw">
+      <input type="text" id="spi" placeholder="樹種名を入力…"
+        autocomplete="off" autocorrect="off" spellcheck="false"
+        oninput="onSi()" onfocus="onSf()" onblur="hsg()">
+      <div class="sgbox" id="sgb"></div>
+    </div>
+    <div class="trow" id="trow"></div>
+  </div>
+
+  <!-- 計測値 -->
+  <div class="card">
+    <div class="ctit">計測値</div>
+    <div class="mgrid">
+      <div class="mi">
+        <label>樹高</label>
+        <input type="number" id="hi" placeholder="10" inputmode="decimal" step="0.5" min="0">
+        <div class="mu">m（メートル）</div>
+      </div>
+      <div class="mi">
+        <label>目周り</label>
+        <input type="number" id="ci" placeholder="100" inputmode="numeric" min="0">
+        <div class="mu">cm（センチ）</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 樹勢状態 -->
+  <div class="card">
+    <div class="ctit">樹勢状態</div>
+    <div class="rg">
+      <button class="rb" data-r="A" onclick="sr('A')"><span class="rl">A</span><span class="rd">状態良好</span></button>
+      <button class="rb" data-r="B" onclick="sr('B')"><span class="rl">B</span><span class="rd">一部枯れ</span></button>
+      <button class="rb" data-r="C" onclick="sr('C')"><span class="rl">C</span><span class="rd">枯死恐れ</span></button>
+      <button class="rb" data-r="D" onclick="sr('D')"><span class="rl">D</span><span class="rd">⚠倒木注意</span></button>
+    </div>
+    <div id="rw">
+      <div class="rban">C・D判定：理由を入力してください</div>
+      <input type="text" id="ri" placeholder="例：虫食い（クビアカ）あり">
+    </div>
+  </div>
+
+  <!-- 備考 -->
+  <div class="card">
+    <div class="ctit">備考</div>
+    <textarea id="memo" rows="2" placeholder="特記事項があれば…"></textarea>
+  </div>
+
+  <!-- AutoCAD併用ヒント -->
+  <div class="autocad-tip">
+    💡 <strong>AutoCAD Split View 運用</strong><br>
+    左画面でAutoCAD図面の番号を確認 →<br>
+    右画面（このアプリ）の整理番号欄に手動入力して調査データを登録
+  </div>
+
+  <!-- 写真ヒント -->
+  <div class="photo-hint">
+    📷 写真はiPhoneの電子小黒板アプリで撮影。<br>
+    PCのClaudeでファイル名を <strong>A00001.jpg</strong> 形式にリネームし、
+    PythonスクリプトでExcelに自動貼付します。
+  </div>
+
+  <!-- 保存ボタン -->
+  <button class="bsave" id="sbtn" onclick="doSave()">この樹木を保存 →</button>
+  <button class="bcancel" id="ccbtn" onclick="cancelEd()" style="display:none">編集をキャンセル</button>
+
+</div>
+
+<!-- ===== 一覧ページ ===== -->
+<div class="pg" id="pg-ls" style="height:calc(100vh - 48px)">
+  <div class="ltb">
+    <input type="text" placeholder="🔍 番号・樹種で検索…" oninput="rl(this.value)">
+    <button class="bsm bex" onclick="exj()">📥 JSON書出</button>
+    <button class="bsm bim" onclick="document.getElementById('impf').click()">📂 読込</button>
+    <input type="file" id="impf" accept=".json" onchange="imj()">
+    <button class="bsm bcl" onclick="clr()">🗑 全削除</button>
+  </div>
+  <div id="rscrl" style="flex:1;overflow-y:auto;padding:10px 12px">
+    <div id="rcon"></div>
+  </div>
+</div>
+
+<div class="toast" id="tst"></div>
+
+<script>
+var rec = JSON.parse(localStorage.getItem('tl_r') || '[]');
+var spl = JSON.parse(localStorage.getItem('tl_s') || '[]');
+var cr = '', eid = null, manualNum = '';
+
+function ps() {
+  localStorage.setItem('tl_r', JSON.stringify(rec));
+  localStorage.setItem('tl_s', JSON.stringify(spl));
+}
+
+// ── 番号 ──
+function autoNum() {
+  if (!rec.length) return 'A00001';
+  var m = Math.max(...rec.map(r => parseInt(r.id.slice(1)) || 0));
+  return 'A' + String(m + 1).padStart(5, '0');
+}
+function dispNum() {
+  var n = eid ? eid : (manualNum || autoNum());
+  document.getElementById('ndsp').textContent = n;
+  document.getElementById('pill').textContent = rec.length + '本';
+}
+function onNumInp() {
+  manualNum = document.getElementById('num-inp').value.trim().toUpperCase();
+  document.getElementById('ndsp').textContent = manualNum || autoNum();
+}
+function onNumBlur() {
+  // 書式チェック: A+5桁数字
+  var v = document.getElementById('num-inp').value.trim().toUpperCase();
+  if (v && !/^A\d{5}$/.test(v)) {
+    t2('⚠️ 番号は A00001 の形式で入力してください');
+    document.getElementById('num-inp').value = '';
+    manualNum = '';
+    document.getElementById('ndsp').textContent = autoNum();
+  }
+}
+function useAuto() {
+  manualNum = '';
+  document.getElementById('num-inp').value = '';
+  document.getElementById('ndsp').textContent = autoNum();
+  t2('自動採番に切り替えました');
+}
+
+// ── タブ ──
+function sw(n) {
+  document.querySelectorAll('.htab').forEach((t, i) => t.classList.toggle('on', ['in','ls'][i] === n));
+  document.querySelectorAll('.pg').forEach(p => p.classList.remove('on'));
+  document.getElementById('pg-' + n).classList.add('on');
+  if (n === 'ls') rl('');
+  if (n === 'in') dispNum();
+}
+
+// ── 樹種 ──
+function onSi() { sg(document.getElementById('spi').value.trim()); }
+function onSf() { sg(document.getElementById('spi').value.trim()); }
+function hsg()  { setTimeout(() => document.getElementById('sgb').style.display = 'none', 160); }
+function sg(v) {
+  var b = document.getElementById('sgb');
+  var h = v ? spl.filter(s => s.includes(v) && s !== v) : spl;
+  if (!h.length) { b.style.display = 'none'; return; }
+  b.innerHTML = h.map(s => '<div class="si" onmousedown="ps2(\'' + s + '\')">🌳 ' + s + '</div>').join('');
+  b.style.display = 'block';
+}
+function ps2(n) {
+  document.getElementById('spi').value = n;
+  document.getElementById('sgb').style.display = 'none';
+  ht(n);
+}
+function ht(n) { document.querySelectorAll('.spt').forEach(t => t.classList.toggle('sel', t.dataset.n === n)); }
+function rt2() {
+  document.getElementById('trow').innerHTML =
+    spl.map(s => '<span class="spt" data-n="' + s + '" onclick="ps2(\'' + s + '\')">' + s + '</span>').join('');
+}
+
+// ── 樹勢 ──
+function sr(r) {
+  cr = r;
+  document.querySelectorAll('.rb').forEach(b => b.classList.toggle('sel', b.dataset.r === r));
+  var rw = document.getElementById('rw');
+  if (r === 'C' || r === 'D') rw.classList.add('show');
+  else { rw.classList.remove('show'); document.getElementById('ri').value = ''; }
+}
+
+// ── 保存 ──
+function doSave() {
+  var sp = document.getElementById('spi').value.trim();
+  var ht2 = document.getElementById('hi').value;
+  var ci2 = document.getElementById('ci').value;
+  var mo = document.getElementById('memo').value.trim();
+  var re = document.getElementById('ri').value.trim();
+  if (!sp)  { t2('⚠️ 樹種を入力してください'); return; }
+  if (!ht2) { t2('⚠️ 樹高を入力してください'); return; }
+  if (!ci2) { t2('⚠️ 目周りを入力してください'); return; }
+  if (!cr)  { t2('⚠️ 樹勢状態を選択してください'); return; }
+
+  if (!spl.includes(sp)) { spl.push(sp); rt2(); }
+
+  var id = eid ? eid : (manualNum || autoNum());
+
+  // 重複チェック（新規登録時）
+  if (!eid && rec.find(r => r.id === id)) {
+    t2('⚠️ ' + id + ' はすでに登録済みです');
+    return;
+  }
+
+  var r = { id: id, sp: sp, ht: parseFloat(ht2), ci: parseInt(ci2),
+    rank: cr, re: (cr === 'C' || cr === 'D') ? re : '', mo: mo,
+    ts: new Date().toISOString() };
+
+  if (eid) {
+    var i = rec.findIndex(x => x.id === eid);
+    if (i >= 0) rec[i] = r;
+  } else {
+    rec.push(r);
+  }
+  ps();
+  t2('✅ ' + id + ' を保存しました');
+  rst();
+}
+
+function rst() {
+  ['spi','hi','ci','memo','ri','num-inp'].forEach(id => document.getElementById(id).value = '');
+  cr = ''; eid = null; manualNum = '';
+  document.querySelectorAll('.rb').forEach(b => b.classList.remove('sel'));
+  document.getElementById('rw').classList.remove('show');
+  document.querySelectorAll('.spt').forEach(t => t.classList.remove('sel'));
+  document.getElementById('sbtn').textContent = 'この樹木を保存 →';
+  document.getElementById('sbtn').classList.remove('em');
+  document.getElementById('ccbtn').style.display = 'none';
+  dispNum();
+}
+function cancelEd() { rst(); t2('編集をキャンセルしました'); }
+
+// ── 一覧 ──
+function rl(q) {
+  q = q || '';
+  dispNum();
+  var con = document.getElementById('rcon');
+  var f = q ? rec.filter(r => r.id.includes(q) || r.sp.includes(q)) : rec;
+  if (!f.length) {
+    con.innerHTML = '<div class="emp"><div class="ei">🌱</div>登録された樹木がありません</div>';
+    return;
+  }
+  var s = [...f].sort((a, b) => a.id.localeCompare(b.id));
+  con.innerHTML = '<table class="rt"><thead><tr>' +
+    '<th>整理番号</th><th>樹種</th><th>樹高</th><th>目周り</th>' +
+    '<th style="text-align:center">樹勢</th><th>理由/備考</th><th>操作</th>' +
+    '</tr></thead><tbody>' +
+    s.map(r =>
+      '<tr><td class="tno">' + r.id + '</td><td>' + r.sp + '</td>' +
+      '<td>' + r.ht + 'm</td><td>' + r.ci + 'cm</td>' +
+      '<td class="trk r' + r.rank + '">' + r.rank + '</td>' +
+      '<td style="font-size:12px;color:var(--ink-sub)">' + (r.re || r.mo || '—') + '</td>' +
+      '<td><button class="bed" onclick="ed(\'' + r.id + '\')">編集</button>' +
+      '<button class="bdl" onclick="dl(\'' + r.id + '\')">削除</button></td></tr>'
+    ).join('') + '</tbody></table>';
+}
+
+function ed(id) {
+  var r = rec.find(x => x.id === id);
+  if (!r) return;
+  eid = id; sw('in');
+  document.getElementById('ndsp').textContent = id;
+  document.getElementById('num-inp').value = id;
+  document.getElementById('spi').value = r.sp;
+  document.getElementById('hi').value = r.ht;
+  document.getElementById('ci').value = r.ci;
+  document.getElementById('memo').value = r.mo || '';
+  sr(r.rank);
+  if (r.re) document.getElementById('ri').value = r.re;
+  document.getElementById('sbtn').textContent = '✏️ ' + id + ' を更新する';
+  document.getElementById('sbtn').classList.add('em');
+  document.getElementById('ccbtn').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function dl(id) {
+  if (!confirm(id + ' を削除しますか？')) return;
+  rec = rec.filter(r => r.id !== id);
+  ps(); rl(''); t2('🗑 ' + id + ' を削除しました');
+}
+
+// ── JSON ──
+function exj() {
+  if (!rec.length) { t2('⚠️ データがありません'); return; }
+  var b = new Blob([JSON.stringify({ records: rec, spList: spl, at: new Date().toISOString() }, null, 2)],
+    { type: 'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(b);
+  a.download = 'tree_ledger_' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '.json';
+  a.click();
+  t2('📥 JSON書き出し完了');
+}
+function imj() {
+  var f = document.getElementById('impf').files[0]; if (!f) return;
+  var rd = new FileReader();
+  rd.onload = function(e) {
+    try {
+      var d = JSON.parse(e.target.result); if (!d.records) throw 0;
+      var ex = new Set(rec.map(r => r.id)); var add = 0;
+      d.records.forEach(r => { if (!ex.has(r.id)) { rec.push(r); add++; } });
+      if (d.spList) d.spList.forEach(s => { if (!spl.includes(s)) spl.push(s); });
+      ps(); rt2(); rl(''); t2('✅ ' + add + '件を読み込みました');
+    } catch { t2('⚠️ 読み込み失敗'); }
+  };
+  rd.readAsText(f);
+}
+function clr() {
+  if (!confirm('全データを削除します。\n必ずJSONを書き出してからにしてください。')) return;
+  rec = []; ps(); rl(''); t2('🗑 全データを削除しました');
+}
+
+// ── トースト ──
+function t2(m) {
+  var e = document.getElementById('tst');
+  e.textContent = m; e.classList.add('show');
+  setTimeout(() => e.classList.remove('show'), 2600);
+}
+
+dispNum(); rt2();
+</script>
+</body>
+</html>

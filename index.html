@@ -65,7 +65,12 @@ input[type=number]{font-size:20px;font-weight:700;font-variant-numeric:tabular-n
 .si{padding:11px 13px;font-size:15px;cursor:pointer;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:8px}
 .si:last-child{border-bottom:none}
 .si:active{background:var(--moss)}
-.trow{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;min-height:28px}
+.trow-wrap{margin-top:8px;position:relative;}
+.trow{display:flex;flex-wrap:wrap;gap:5px;min-height:28px;overflow:hidden;transition:max-height 0.3s ease;}
+.trow.collapsed{max-height:62px;}/* 2段分: タグ高さ約26px×2+gap5px */
+.trow.expanded{max-height:400px;overflow-y:auto;}
+.trow-toggle{display:none;width:100%;margin-top:4px;padding:4px 0;background:none;border:none;
+  font-size:11px;font-weight:700;color:var(--leaf);cursor:pointer;text-align:center;}
 .spt{background:var(--moss);color:var(--forest);border:1px solid var(--sprout);padding:4px 11px;border-radius:16px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .spt.sel,.spt:active{background:var(--leaf);color:white;border-color:var(--leaf)}
 
@@ -197,7 +202,10 @@ input[type=file]{display:none}
         oninput="onSi()" onfocus="onSf()" onblur="hsg()">
       <div class="sgbox" id="sgb"></div>
     </div>
-    <div class="trow" id="trow"></div>
+    <div class="trow-wrap" id="trow-wrap">
+      <div class="trow collapsed" id="trow"></div>
+      <button class="trow-toggle" id="trow-toggle" onclick="toggleTrow()"></button>
+    </div>
   </div>
 
   <!-- 計測値 -->
@@ -370,7 +378,34 @@ function ps2(n) {
 function ht(n) { document.querySelectorAll('.spt').forEach(t => t.classList.toggle('sel', t.dataset.n === n)); }
 function rt2() {
   document.getElementById('trow').innerHTML =
-    spl.map(s => '<span class="spt" data-n="' + s + '" onclick="ps2(\'' + s + '\')">' + s + '</span>').join('');
+    spl.map(s => '<span class="spt" data-n="' + s + '" onclick="ps2(\'' + s + '\')">'+s+'</span>').join('');
+  updateTrowToggle();
+}
+function updateTrowToggle() {
+  var trow = document.getElementById('trow');
+  var toggle = document.getElementById('trow-toggle');
+  if (!trow || !toggle) return;
+  trow.classList.remove('collapsed');
+  trow.classList.add('expanded');
+  var fullH = trow.scrollHeight;
+  trow.classList.remove('expanded');
+  trow.classList.add('collapsed');
+  if (fullH > 66) {
+    toggle.style.display = 'block';
+    toggle.textContent = '▼ もっと見る（' + spl.length + '種）';
+  } else {
+    toggle.style.display = 'none';
+    trow.classList.remove('collapsed');
+    trow.classList.add('expanded');
+  }
+}
+function toggleTrow() {
+  var trow = document.getElementById('trow');
+  var toggle = document.getElementById('trow-toggle');
+  var isExp = trow.classList.contains('expanded');
+  trow.classList.toggle('collapsed', isExp);
+  trow.classList.toggle('expanded', !isExp);
+  toggle.textContent = isExp ? '▼ もっと見る（' + spl.length + '種）' : '▲ 折りたたむ';
 }
 
 // ── 樹勢 ──

@@ -210,9 +210,33 @@ input[type=file]{display:none}
         <div class="mu">m（メートル）</div>
       </div>
       <div class="mi">
-        <label>目周り</label>
+        <label>目周り <span id="ci-label" style="font-weight:400;color:#888;"></span></label>
         <input type="number" id="ci" placeholder="100" inputmode="numeric" min="0">
         <div class="mu">cm（センチ）</div>
+      </div>
+    </div>
+    <div style="margin-top:10px;">
+      <button id="kab-btn" onclick="toggleKab()"
+        style="width:100%;padding:9px;border:1.5px solid #b08860;border-radius:8px;
+               background:#f5f0e8;color:#7a5230;font-size:13px;font-weight:700;cursor:pointer;">
+        🌿 株立入力モード
+      </button>
+    </div>
+    <div id="kab-area" style="display:none;margin-top:12px;padding-top:10px;border-top:1.5px solid #c8e6b8;">
+      <div style="font-size:11px;color:#666;margin-bottom:10px;line-height:1.7;">
+        各株の目周りを入力（空欄=0）<br><b>合計×0.7</b> が目周り欄に自動反映
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+        <div class="mi"><label>1株目</label><input type="number" id="k1" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
+        <div class="mi"><label>2株目</label><input type="number" id="k2" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
+        <div class="mi"><label>3株目</label><input type="number" id="k3" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
+        <div class="mi"><label>4株目</label><input type="number" id="k4" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
+        <div class="mi"><label>5株目</label><input type="number" id="k5" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
+        <div class="mi" style="background:#e8f5e9;border-radius:8px;padding:10px;display:flex;flex-direction:column;justify-content:center;">
+          <div style="font-size:10px;font-weight:700;color:#4e8c3f;margin-bottom:4px;">合計×0.7→目周り</div>
+          <div id="kab-result" style="font-size:22px;font-weight:800;color:#1e3d1a;font-variant-numeric:tabular-nums;">—</div>
+          <div style="font-size:10px;color:#666;">cm</div>
+        </div>
       </div>
     </div>
   </div>
@@ -393,6 +417,37 @@ function doSave() {
   rst();
 }
 
+// ── 株立 ──
+var kabMode = false;
+function toggleKab() {
+  kabMode = !kabMode;
+  document.getElementById('kab-area').style.display = kabMode ? 'block' : 'none';
+  document.getElementById('kab-btn').textContent = kabMode ? '✅ 株立モード ON（タップで解除）' : '🌿 株立入力モード';
+  document.getElementById('kab-btn').style.background = kabMode ? '#c8e6b8' : '#f5f0e8';
+  document.getElementById('kab-btn').style.color = kabMode ? '#1e3d1a' : '#7a5230';
+  if (!kabMode) {
+    ['k1','k2','k3','k4','k5'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('kab-result').textContent = '—';
+    document.getElementById('ci-label').textContent = '';
+  }
+}
+function calcKab() {
+  var total = 0;
+  ['k1','k2','k3','k4','k5'].forEach(id => {
+    var v = parseFloat(document.getElementById(id).value) || 0;
+    total += v;
+  });
+  var result = Math.round(total * 0.7);
+  document.getElementById('kab-result').textContent = result > 0 ? result : '—';
+  if (result > 0) {
+    document.getElementById('ci').value = result;
+    document.getElementById('ci-label').textContent = '（株立計算値）';
+  } else {
+    document.getElementById('ci').value = '';
+    document.getElementById('ci-label').textContent = '';
+  }
+}
+
 function rst() {
   ['spi','hi','ci','memo','ri','num-inp'].forEach(id => document.getElementById(id).value = '');
   cr = ''; eid = null; manualNum = '';
@@ -402,6 +457,14 @@ function rst() {
   document.getElementById('sbtn').textContent = 'この樹木を保存 →';
   document.getElementById('sbtn').classList.remove('em');
   document.getElementById('ccbtn').style.display = 'none';
+  kabMode = false;
+  ['k1','k2','k3','k4','k5'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('kab-result').textContent = '—';
+  document.getElementById('kab-area').style.display = 'none';
+  document.getElementById('kab-btn').textContent = '🌿 株立入力モード';
+  document.getElementById('kab-btn').style.background = '#f5f0e8';
+  document.getElementById('kab-btn').style.color = '#7a5230';
+  document.getElementById('ci-label').textContent = '';
   dispNum();
 }
 function cancelEd() { rst(); t2('編集をキャンセルしました'); }

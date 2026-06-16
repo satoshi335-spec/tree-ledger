@@ -302,6 +302,8 @@ input[type=file]{display:none}
 var rec = JSON.parse(localStorage.getItem('tl_r') || '[]');
 var spl = JSON.parse(localStorage.getItem('tl_s') || '[]');
 var cr = '', eid = null, manualNum = '';
+var currentPage = 1;
+var PAGE_SIZE = 100;
 
 function ps() {
   localStorage.setItem('tl_r', JSON.stringify(rec));
@@ -432,19 +434,21 @@ function toggleKab() {
   }
 }
 function calcKab() {
-  var total = 0;
-  ['k1','k2','k3','k4','k5'].forEach(id => {
-    var v = parseFloat(document.getElementById(id).value) || 0;
-    total += v;
-  });
+  var vals = ['k1','k2','k3','k4','k5'].map(id => parseFloat(document.getElementById(id).value) || 0);
+  var nonzero = vals.filter(v => v > 0);
+  var total = vals.reduce((a,b) => a+b, 0);
   var result = Math.round(total * 0.7);
   document.getElementById('kab-result').textContent = result > 0 ? result : '—';
   if (result > 0) {
     document.getElementById('ci').value = result;
     document.getElementById('ci-label').textContent = '（株立計算値）';
+    // 備考欄に計算式を自動入力
+    var formula = '株立（' + nonzero.join('+') + '）×0.7';
+    document.getElementById('memo').value = formula;
   } else {
     document.getElementById('ci').value = '';
     document.getElementById('ci-label').textContent = '';
+    document.getElementById('memo').value = '';
   }
 }
 
@@ -469,7 +473,7 @@ function rst() {
 }
 function cancelEd() { rst(); t2('編集をキャンセルしました'); }
 
-// ── 一覧 ──
+// ── 一覧（ページネーション） ──
 function rl(q) {
   q = q || '';
   dispNum();
@@ -480,18 +484,48 @@ function rl(q) {
     return;
   }
   var s = [...f].sort((a, b) => a.id.localeCompare(b.id));
-  con.innerHTML = '<table class="rt"><thead><tr>' +
+  var totalPages = Math.ceil(s.length / PAGE_SIZE);
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
+  var start = (currentPage - 1) * PAGE_SIZE;
+  var pageRecs = s.slice(start, start + PAGE_SIZE);
+
+  function mkNav() {
+    if (totalPages <= 1) return '';
+    var n = '<div style="display:flex;align-items:center;gap:6px;padding:8px 4px;flex-wrap:wrap;">';
+    n += '<span style="font-size:12px;color:var(--ink-sub);">' + s.length + '本中 ' + (start+1) + '〜' + Math.min(start+PAGE_SIZE, s.length) + '本目</span>';
+    n += '<div style="margin-left:auto;display:flex;gap:4px;">';
+    if (currentPage > 1)
+      n += '<button onclick="goPage(' + (currentPage-1) + ')" style="padding:5px 12px;border:1px solid var(--rule);border-radius:6px;background:white;font-size:12px;font-weight:700;cursor:pointer;">◀ 前</button>';
+    for (var p = 1; p <= totalPages; p++) {
+      var st = p === currentPage ? 'background:var(--leaf);color:white;border-color:var(--leaf);' : 'background:white;';
+      n += '<button onclick="goPage(' + p + ')" style="padding:5px 11px;border:1px solid var(--rule);border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;' + st + '">' + p + '</button>';
+    }
+    if (currentPage < totalPages)
+      n += '<button onclick="goPage(' + (currentPage+1) + ')" style="padding:5px 12px;border:1px solid var(--rule);border-radius:6px;background:white;font-size:12px;font-weight:700;cursor:pointer;">次 ▶</button>';
+    n += '</div></div>';
+    return n;
+  }
+
+  con.innerHTML = mkNav() +
+    '<table class="rt"><thead><tr>' +
     '<th>整理番号</th><th>樹種</th><th>樹高</th><th>目周り</th>' +
     '<th style="text-align:center">樹勢</th><th>理由/備考</th><th>操作</th>' +
     '</tr></thead><tbody>' +
-    s.map(r =>
+    pageRecs.map(r =>
       '<tr><td class="tno">' + r.id + '</td><td>' + r.sp + '</td>' +
       '<td>' + r.ht + 'm</td><td>' + r.ci + 'cm</td>' +
       '<td class="trk r' + r.rank + '">' + r.rank + '</td>' +
       '<td style="font-size:12px;color:var(--ink-sub)">' + (r.re || r.mo || '—') + '</td>' +
       '<td><button class="bed" onclick="ed(\'' + r.id + '\')">編集</button>' +
       '<button class="bdl" onclick="dl(\'' + r.id + '\')">削除</button></td></tr>'
-    ).join('') + '</tbody></table>';
+    ).join('') + '</tbody></table>' + mkNav();
+}
+function goPage(p) {
+  currentPage = p;
+  var q = document.querySelector('.ltb input[type=text]');
+  rl(q ? q.value : '');
+  document.getElementById('rscrl').scrollTop = 0;
 }
 
 function ed(id) {

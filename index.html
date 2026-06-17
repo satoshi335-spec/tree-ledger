@@ -240,6 +240,11 @@ input[type=file]{display:none}
         <div class="mi"><label>3株目</label><input type="number" id="k3" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
         <div class="mi"><label>4株目</label><input type="number" id="k4" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
         <div class="mi"><label>5株目</label><input type="number" id="k5" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
+        <div class="mi"><label>6株目</label><input type="number" id="k6" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
+        <div class="mi"><label>7株目</label><input type="number" id="k7" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
+        <div class="mi"><label>8株目</label><input type="number" id="k8" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
+        <div class="mi"><label>9株目</label><input type="number" id="k9" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
+        <div class="mi"><label>10株目</label><input type="number" id="k10" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
         <div class="mi" style="background:#e8f5e9;border-radius:8px;padding:10px;display:flex;flex-direction:column;justify-content:center;">
           <div style="font-size:10px;font-weight:700;color:#4e8c3f;margin-bottom:4px;">合計×0.7→目周り</div>
           <div id="kab-result" style="font-size:22px;font-weight:800;color:#1e3d1a;font-variant-numeric:tabular-nums;">—</div>
@@ -268,6 +273,10 @@ input[type=file]{display:none}
   <div class="card">
     <div class="ctit">備考</div>
     <textarea id="memo" rows="2" placeholder="特記事項があれば…"></textarea>
+    <div style="margin-top:10px;">
+      <button class="bsave" id="sbtn" onclick="doSave()">この樹木を保存 →</button>
+      <button class="bcancel" id="ccbtn" onclick="cancelEd()" style="display:none">編集をキャンセル</button>
+    </div>
   </div>
 
   <!-- AutoCAD併用ヒント -->
@@ -284,9 +293,7 @@ input[type=file]{display:none}
     PythonスクリプトでExcelに自動貼付します。
   </div>
 
-  <!-- 保存ボタン -->
-  <button class="bsave" id="sbtn" onclick="doSave()">この樹木を保存 →</button>
-  <button class="bcancel" id="ccbtn" onclick="cancelEd()" style="display:none">編集をキャンセル</button>
+
 
 </div>
 
@@ -469,7 +476,7 @@ function toggleKab() {
   }
 }
 function calcKab() {
-  var vals = ['k1','k2','k3','k4','k5'].map(id => parseFloat(document.getElementById(id).value) || 0);
+  var vals = ['k1','k2','k3','k4','k5','k6','k7','k8','k9','k10'].map(id => parseFloat(document.getElementById(id).value) || 0);
   var nonzero = vals.filter(v => v > 0);
   var total = vals.reduce((a,b) => a+b, 0);
   var result = Math.round(total * 0.7);
@@ -477,7 +484,6 @@ function calcKab() {
   if (result > 0) {
     document.getElementById('ci').value = result;
     document.getElementById('ci-label').textContent = '（株立計算値）';
-    // 備考欄に計算式を自動入力
     var formula = '株立（' + nonzero.join('+') + '）×0.7';
     document.getElementById('memo').value = formula;
   } else {
@@ -497,7 +503,7 @@ function rst() {
   document.getElementById('sbtn').classList.remove('em');
   document.getElementById('ccbtn').style.display = 'none';
   kabMode = false;
-  ['k1','k2','k3','k4','k5'].forEach(id => document.getElementById(id).value = '');
+  ['k1','k2','k3','k4','k5','k6','k7','k8','k9','k10'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('kab-result').textContent = '—';
   document.getElementById('kab-area').style.display = 'none';
   document.getElementById('kab-btn').textContent = '🌿 株立入力モード';

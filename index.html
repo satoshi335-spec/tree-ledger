@@ -381,6 +381,17 @@ function ps2(n) {
   document.getElementById('spi').value = n;
   document.getElementById('sgb').style.display = 'none';
   ht(n);
+  // 選択した樹種を先頭に移動
+  moveToTop(n);
+}
+function moveToTop(name) {
+  var idx = spl.indexOf(name);
+  if (idx > 0) {
+    spl.splice(idx, 1);
+    spl.unshift(name);
+    ps();
+    rt2();
+  }
 }
 function ht(n) { document.querySelectorAll('.spt').forEach(t => t.classList.toggle('sel', t.dataset.n === n)); }
 function rt2() {
@@ -436,7 +447,12 @@ function doSave() {
   if (!ci2) { t2('⚠️ 目周りを入力してください'); return; }
   if (!cr)  { t2('⚠️ 樹勢状態を選択してください'); return; }
 
-  if (!spl.includes(sp)) { spl.push(sp); rt2(); }
+  if (!spl.includes(sp)) {
+    spl.unshift(sp);  // 新規樹種は先頭に追加
+    rt2();
+  } else {
+    moveToTop(sp);    // 既存樹種も先頭に移動
+  }
 
   var id = eid ? eid : (manualNum || autoNum());
 

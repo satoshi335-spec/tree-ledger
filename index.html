@@ -214,12 +214,12 @@ input[type=file]{display:none}
     <div class="mgrid">
       <div class="mi">
         <label>樹高</label>
-        <input type="number" id="hi" placeholder="10" inputmode="decimal" step="0.5" min="0">
+        <input type="number" id="hi" placeholder="10" inputmode="decimal" step="0.5" min="0" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('ci').focus();}">
         <div class="mu">m（メートル）</div>
       </div>
       <div class="mi">
         <label>目周り <span id="ci-label" style="font-weight:400;color:#888;"></span></label>
-        <input type="number" id="ci" placeholder="100" inputmode="numeric" min="0">
+        <input type="number" id="ci" placeholder="100" inputmode="numeric" min="0" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('memo').focus();}">
         <div class="mu">cm（センチ）</div>
       </div>
     </div>
@@ -235,16 +235,16 @@ input[type=file]{display:none}
         各株の目周りを入力（空欄=0）<br><b>合計×0.7</b> が目周り欄に自動反映
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-        <div class="mi"><label>1株目</label><input type="number" id="k1" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
-        <div class="mi"><label>2株目</label><input type="number" id="k2" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
-        <div class="mi"><label>3株目</label><input type="number" id="k3" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
-        <div class="mi"><label>4株目</label><input type="number" id="k4" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
-        <div class="mi"><label>5株目</label><input type="number" id="k5" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
-        <div class="mi"><label>6株目</label><input type="number" id="k6" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
-        <div class="mi"><label>7株目</label><input type="number" id="k7" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
-        <div class="mi"><label>8株目</label><input type="number" id="k8" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
-        <div class="mi"><label>9株目</label><input type="number" id="k9" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
-        <div class="mi"><label>10株目</label><input type="number" id="k10" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()"><div class="mu">cm</div></div>
+        <div class="mi"><label>1株目</label><input type="number" id="k1" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('k2').focus();}"><div class="mu">cm</div></div>
+        <div class="mi"><label>2株目</label><input type="number" id="k2" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('k3').focus();}"><div class="mu">cm</div></div>
+        <div class="mi"><label>3株目</label><input type="number" id="k3" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('k4').focus();}"><div class="mu">cm</div></div>
+        <div class="mi"><label>4株目</label><input type="number" id="k4" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('k5').focus();}"><div class="mu">cm</div></div>
+        <div class="mi"><label>5株目</label><input type="number" id="k5" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('k6').focus();}"><div class="mu">cm</div></div>
+        <div class="mi"><label>6株目</label><input type="number" id="k6" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('k7').focus();}"><div class="mu">cm</div></div>
+        <div class="mi"><label>7株目</label><input type="number" id="k7" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('k8').focus();}"><div class="mu">cm</div></div>
+        <div class="mi"><label>8株目</label><input type="number" id="k8" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('k9').focus();}"><div class="mu">cm</div></div>
+        <div class="mi"><label>9株目</label><input type="number" id="k9" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('k10').focus();}"><div class="mu">cm</div></div>
+        <div class="mi"><label>10株目</label><input type="number" id="k10" placeholder="0" inputmode="numeric" min="0" oninput="calcKab()" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('memo').focus();}"><div class="mu">cm</div></div>
         <div class="mi" style="background:#e8f5e9;border-radius:8px;padding:10px;display:flex;flex-direction:column;justify-content:center;">
           <div style="font-size:10px;font-weight:700;color:#4e8c3f;margin-bottom:4px;">合計×0.7→目周り</div>
           <div id="kab-result" style="font-size:22px;font-weight:800;color:#1e3d1a;font-variant-numeric:tabular-nums;">—</div>
@@ -381,8 +381,9 @@ function ps2(n) {
   document.getElementById('spi').value = n;
   document.getElementById('sgb').style.display = 'none';
   ht(n);
-  // 選択した樹種を先頭に移動
   moveToTop(n);
+  // 次の入力欄（樹高）に自動フォーカス
+  setTimeout(() => document.getElementById('hi').focus(), 50);
 }
 function moveToTop(name) {
   var idx = spl.indexOf(name);
@@ -474,7 +475,7 @@ function doSave() {
   }
   ps();
   t2('✅ ' + id + ' を保存しました');
-  rst();
+  rst({focusSpecies:true});
 }
 
 // ── 株立 ──
@@ -485,6 +486,9 @@ function toggleKab() {
   document.getElementById('kab-btn').textContent = kabMode ? '✅ 株立モード ON（タップで解除）' : '🌿 株立入力モード';
   document.getElementById('kab-btn').style.background = kabMode ? '#c8e6b8' : '#f5f0e8';
   document.getElementById('kab-btn').style.color = kabMode ? '#1e3d1a' : '#7a5230';
+  if (kabMode) {
+    setTimeout(() => document.getElementById('k1').focus(), 50);
+  }
   if (!kabMode) {
     ['k1','k2','k3','k4','k5'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('kab-result').textContent = '—';
@@ -509,7 +513,8 @@ function calcKab() {
   }
 }
 
-function rst() {
+function rst(opts) {
+  opts = opts || {};
   ['spi','hi','ci','memo','ri','num-inp'].forEach(id => document.getElementById(id).value = '');
   cr = ''; eid = null; manualNum = '';
   document.querySelectorAll('.rb').forEach(b => b.classList.remove('sel'));
@@ -527,8 +532,15 @@ function rst() {
   document.getElementById('kab-btn').style.color = '#7a5230';
   document.getElementById('ci-label').textContent = '';
   dispNum();
+  // 新規入力時はAをデフォルト選択し、樹種欄にフォーカス
+  if (!opts.keepRank) {
+    sr('A');
+  }
+  if (opts.focusSpecies) {
+    setTimeout(() => document.getElementById('spi').focus(), 80);
+  }
 }
-function cancelEd() { rst(); t2('編集をキャンセルしました'); }
+function cancelEd() { rst({keepRank:false}); t2('編集をキャンセルしました'); }
 
 // ── 一覧（ページネーション） ──
 function rl(q) {
@@ -646,7 +658,7 @@ function t2(m) {
   setTimeout(() => e.classList.remove('show'), 2600);
 }
 
-dispNum(); rt2();
+dispNum(); rt2(); sr('A');
 </script>
 </body>
 </html>

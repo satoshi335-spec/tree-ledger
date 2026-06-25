@@ -490,7 +490,7 @@ function toggleKab() {
     setTimeout(() => document.getElementById('k1').focus(), 50);
   }
   if (!kabMode) {
-    ['k1','k2','k3','k4','k5'].forEach(id => document.getElementById(id).value = '');
+    ['k1','k2','k3','k4','k5','k6','k7','k8','k9','k10'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('kab-result').textContent = '—';
     document.getElementById('ci-label').textContent = '';
   }
@@ -659,6 +659,7 @@ function t2(m) {
 }
 
 dispNum(); rt2(); sr('A');
+setTimeout(() => document.getElementById('spi').focus(), 100);
 </script>
 </body>
 </html>

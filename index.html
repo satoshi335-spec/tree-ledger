@@ -110,6 +110,13 @@ input[type=number]{font-size:20px;font-weight:700;font-variant-numeric:tabular-n
 }
 .bsave:active{transform:scale(.97)}
 .bsave.em{background:var(--bark)}
+.bback{
+  flex:none;padding:15px 14px;background:var(--moss);color:var(--forest);
+  border:none;border-radius:10px;font-size:15px;font-weight:800;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .12s;white-space:nowrap;
+}
+.bback:active{transform:scale(.97)}
+.savebar{display:flex;gap:8px}
 .bcancel{width:100%;padding:10px;background:var(--soil);color:var(--ink-sub);border:1.5px solid var(--rule);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px}
 
 /* ── 一覧ページ ── */
@@ -274,7 +281,10 @@ input[type=file]{display:none}
     <div class="ctit">備考</div>
     <textarea id="memo" rows="2" placeholder="特記事項があれば…"></textarea>
     <div style="margin-top:10px;">
-      <button class="bsave" id="sbtn" onclick="doSave()">この樹木を保存 →</button>
+      <div class="savebar">
+        <button class="bback" id="bkbtn" onclick="goPrev()">← 前に戻る</button>
+        <button class="bsave" id="sbtn" onclick="doSave()" style="flex:1;width:auto">この樹木を保存 →</button>
+      </div>
       <button class="bcancel" id="ccbtn" onclick="cancelEd()" style="display:none">編集をキャンセル</button>
     </div>
   </div>
@@ -541,6 +551,22 @@ function rst(opts) {
   }
 }
 function cancelEd() { rst({keepRank:false}); t2('編集をキャンセルしました'); }
+
+// ── 前に戻る（直前に保存した樹木を修正／編集中は1つ前の番号へ） ──
+function goPrev() {
+  if (!rec.length) { t2('前の樹木がありません'); return; }
+  var s = [...rec].sort((a, b) => a.id.localeCompare(b.id));
+  var target;
+  if (eid) {
+    var idx = s.findIndex(r => r.id === eid);
+    if (idx > 0) target = s[idx - 1].id;
+    else { t2('これ以上前の樹木はありません'); return; }
+  } else {
+    target = s[s.length - 1].id;   // 直前に保存した最新の樹木
+  }
+  ed(target);
+  t2('◀ ' + target + ' を修正できます');
+}
 
 // ── 一覧（ページネーション） ──
 function rl(q) {
